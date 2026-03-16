@@ -1,0 +1,16 @@
+# Development & test files
+tests/
+docker/
+docker-compose.yml
+jest.config.json
+.env*
+!.env.example
+
+# Build artifacts (Vercel builds from source)
+dist/
+*.log
+logs/
+
+# Documentation
+README.md
+sample-request.json
