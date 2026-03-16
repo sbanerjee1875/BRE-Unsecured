@@ -1,0 +1,132 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input",
+      "name": "Input",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 500 }
+    },
+    {
+      "id": "bureau_score_module",
+      "name": "Bureau Score (Max 300)",
+      "type": "decisionTableNode",
+      "position": { "x": 280, "y": 60 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "cibilScore", "name": "CIBIL Score", "field": "cibilScore", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "bureauScore", "name": "Bureau Score Points", "field": "bureauScore", "dataType": "number" }
+        ],
+        "rules": [
+          { "id": "r1", "cibilScore": "< 650",      "bureauScore": "0" },
+          { "id": "r2", "cibilScore": "[650..699]",  "bureauScore": "100" },
+          { "id": "r3", "cibilScore": "[700..749]",  "bureauScore": "160" },
+          { "id": "r4", "cibilScore": "[750..799]",  "bureauScore": "220" },
+          { "id": "r5", "cibilScore": "[800..849]",  "bureauScore": "270" },
+          { "id": "r6", "cibilScore": ">= 850",      "bureauScore": "300" }
+        ]
+      }
+    },
+    {
+      "id": "bureau_behaviour_module",
+      "name": "Bureau Behaviour (Max 200)",
+      "type": "functionNode",
+      "position": { "x": 280, "y": 200 },
+      "content": {
+        "source": "const handler = (input) => {\n  let score = 100; // base\n\n  // Vintage scoring\n  if (input.cibilVintageMonths >= 60) score += 30;\n  else if (input.cibilVintageMonths >= 24) score += 15;\n  else if (input.cibilVintageMonths >= 13) score += 5;\n  else if (input.cibilVintageMonths <= 6) score -= 30;\n\n  // DPD penalties\n  if (input.dpd30Last6Months > 0) score -= 20;\n  if (input.dpd60Last12Months > 0) score -= 25;\n\n  // Enquiry penalties\n  if (input.enquiriesLast30Days > 3) score -= 20;\n  else if (input.enquiriesLast30Days > 1) score -= 10;\n  if (input.enquiriesLast90Days > 6) score -= 15;\n\n  // Credit utilisation\n  if (input.creditUtilisationRatio < 0.30) score += 20;\n  else if (input.creditUtilisationRatio > 0.80) score -= 25;\n  else if (input.creditUtilisationRatio > 0.60) score -= 10;\n\n  // Unsecured/Secured ratio\n  if (input.unsecuredToSecuredRatio < 1.0) score += 15;\n  else if (input.unsecuredToSecuredRatio > 4.0) score -= 20;\n  else if (input.unsecuredToSecuredRatio > 2.0) score -= 10;\n\n  // Unsecured trade lines\n  if (input.unsecuredTradeLines > 4) score -= 15;\n\n  // Oldest trade line\n  if (input.oldestTradeLineAgeMonths >= 60) score += 15;\n\n  return { bureauBehaviour: Math.max(0, Math.min(200, score)) };\n}"
+      }
+    },
+    {
+      "id": "income_foir_module",
+      "name": "Income & FOIR (Max 150)",
+      "type": "functionNode",
+      "position": { "x": 280, "y": 360 },
+      "content": {
+        "source": "const handler = (input) => {\n  let score = 60; // base\n\n  // Income band scoring\n  if (input.netMonthlySalary >= 200000) score += 50;\n  else if (input.netMonthlySalary >= 75000) score += 35;\n  else if (input.netMonthlySalary >= 35000) score += 20;\n  else if (input.netMonthlySalary >= 20000) score += 5;\n\n  // FOIR scoring\n  if (input.foirPostLoan <= 0.30) score += 30;\n  else if (input.foirPostLoan <= 0.45) score += 20;\n  else if (input.foirPostLoan <= 0.55) score += 10;\n  else if (input.foirPostLoan > 0.60) score -= 20;\n\n  // Income verification bonus\n  if (input.incomeVerified) score += 10;\n\n  return { incomeFoir: Math.max(0, Math.min(150, score)) };\n}"
+      }
+    },
+    {
+      "id": "employer_demographics_module",
+      "name": "Employer & Demographics (Max 100)",
+      "type": "decisionTableNode",
+      "position": { "x": 280, "y": 520 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "employerCategory", "name": "Employer Category", "field": "employerCategory", "dataType": "string" },
+          { "id": "employmentTenureMonths", "name": "Employment Tenure (months)", "field": "employmentTenureMonths", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "employerBaseScore", "name": "Employer Base Score", "field": "employerBaseScore", "dataType": "number" },
+          { "id": "tenureBonus", "name": "Tenure Bonus", "field": "tenureBonus", "dataType": "number" }
+        ],
+        "rules": [
+          { "id": "r1",  "employerCategory": "CAT_A", "employmentTenureMonths": ">= 60",  "employerBaseScore": "60", "tenureBonus": "20" },
+          { "id": "r2",  "employerCategory": "CAT_A", "employmentTenureMonths": ">= 24",  "employerBaseScore": "60", "tenureBonus": "15" },
+          { "id": "r3",  "employerCategory": "CAT_A", "employmentTenureMonths": ">= 6",   "employerBaseScore": "60", "tenureBonus": "10" },
+          { "id": "r4",  "employerCategory": "CAT_A", "employmentTenureMonths": "< 6",    "employerBaseScore": "60", "tenureBonus": "0" },
+          { "id": "r5",  "employerCategory": "CAT_B", "employmentTenureMonths": ">= 48",  "employerBaseScore": "50", "tenureBonus": "20" },
+          { "id": "r6",  "employerCategory": "CAT_B", "employmentTenureMonths": ">= 24",  "employerBaseScore": "50", "tenureBonus": "15" },
+          { "id": "r7",  "employerCategory": "CAT_B", "employmentTenureMonths": ">= 12",  "employerBaseScore": "50", "tenureBonus": "10" },
+          { "id": "r8",  "employerCategory": "CAT_B", "employmentTenureMonths": "< 12",   "employerBaseScore": "50", "tenureBonus": "0" },
+          { "id": "r9",  "employerCategory": "CAT_C", "employmentTenureMonths": ">= 36",  "employerBaseScore": "35", "tenureBonus": "15" },
+          { "id": "r10", "employerCategory": "CAT_C", "employmentTenureMonths": ">= 18",  "employerBaseScore": "35", "tenureBonus": "8" },
+          { "id": "r11", "employerCategory": "CAT_C", "employmentTenureMonths": "< 18",   "employerBaseScore": "35", "tenureBonus": "0" },
+          { "id": "r12", "employerCategory": "CAT_D", "employmentTenureMonths": ">= 24",  "employerBaseScore": "15", "tenureBonus": "5" },
+          { "id": "r13", "employerCategory": "CAT_D", "employmentTenureMonths": "< 24",   "employerBaseScore": "15", "tenureBonus": "0" }
+        ]
+      }
+    },
+    {
+      "id": "alternate_data_module",
+      "name": "Alternate Behavioural Data (Max 200)",
+      "type": "functionNode",
+      "position": { "x": 280, "y": 700 },
+      "content": {
+        "source": "const handler = (input) => {\n  let score = 80; // base\n\n  // R-ALT-01: Salary SMS consistency\n  if (input.salaryCreditMonthsLast6 >= 6) score += 20;\n  else if (input.salaryCreditMonthsLast6 >= 4) score += 5;\n  else score -= 20;\n\n  // R-ALT-02: WhatsApp vintage\n  if (input.whatsappVintageMonths >= 24) score += 10;\n  else if (input.whatsappVintageMonths < 6) score -= 5;\n\n  // R-ALT-03: Investment app\n  if (input.hasInvestmentApp) score += 10;\n\n  // R-ALT-04: Lending app count\n  if (input.lendingAppsCount === 0) score += 5;\n  else if (input.lendingAppsCount > 3) score -= 30;\n  else if (input.lendingAppsCount > 1) score -= 10;\n\n  // R-ALT-05: UPI inflow vs income\n  if (input.upiInflowVsIncomeRatio >= 0.80) score += 15;\n  else if (input.upiInflowVsIncomeRatio < 0.40) score -= 15;\n\n  // R-ALT-06: Active SIP\n  if (input.hasActiveSip) score += 15;\n\n  // R-ALT-07: Utility payments\n  if (input.utilityPaymentCount >= 12) score += 10;\n  else if (input.utilityPaymentCount <= 2) score -= 20;\n\n  // R-ALT-08: Mobile number vintage\n  if (input.mobileNumberVintageMonths >= 36) score += 15;\n  else if (input.mobileNumberVintageMonths < 12) score -= 25;\n\n  // R-ALT-09: Bank balance trend\n  if (input.avgBalance6MonthTrend === 'RISING') score += 10;\n  else if (input.avgBalance6MonthTrend === 'DECLINING') score -= 15;\n\n  // R-ALT-10: Location stability\n  if (input.homeLocationStable) score += 10;\n  else score -= 30;\n\n  return { alternateBehavioural: Math.max(0, Math.min(200, score)) };\n}"
+      }
+    },
+    {
+      "id": "fraud_risk_module",
+      "name": "Fraud & Risk Signals (Max 50)",
+      "type": "functionNode",
+      "position": { "x": 280, "y": 880 },
+      "content": {
+        "source": "const handler = (input) => {\n  let score = 50; // start max, deduct\n\n  // Device re-use\n  if (input.sameDeviceApplicationCount7Days > 3) score -= 30;\n  else if (input.sameDeviceApplicationCount7Days > 1) score -= 10;\n\n  // Mobile fraud flag\n  if (input.mobileFraudFlag) score -= 40;\n\n  // Location velocity\n  if (input.locationVelocityFlag) score -= 20;\n\n  return { fraudRisk: Math.max(0, Math.min(50, score)) };\n}"
+      }
+    },
+    {
+      "id": "score_aggregator",
+      "name": "Score Aggregator",
+      "type": "functionNode",
+      "position": { "x": 580, "y": 500 },
+      "content": {
+        "source": "const handler = (input) => {\n  const total = (input.bureauScore || 0)\n    + (input.bureauBehaviour || 0)\n    + (input.incomeFoir || 0)\n    + ((input.employerBaseScore || 0) + (input.tenureBonus || 0))\n    + (input.alternateBehavioural || 0)\n    + (input.fraudRisk || 0);\n\n  let scoreBand;\n  if (total < 400) scoreBand = 'DECLINE';\n  else if (total < 500) scoreBand = '400-499';\n  else if (total < 600) scoreBand = '500-599';\n  else if (total < 700) scoreBand = '600-699';\n  else if (total < 800) scoreBand = '700-799';\n  else scoreBand = '800+';\n\n  return { totalScore: Math.min(1000, total), scoreBand };\n}"
+      }
+    },
+    {
+      "id": "output",
+      "name": "Output",
+      "type": "outputNode",
+      "position": { "x": 820, "y": 500 }
+    }
+  ],
+  "edges": [
+    { "id": "e1",  "sourceId": "input", "targetId": "bureau_score_module" },
+    { "id": "e2",  "sourceId": "input", "targetId": "bureau_behaviour_module" },
+    { "id": "e3",  "sourceId": "input", "targetId": "income_foir_module" },
+    { "id": "e4",  "sourceId": "input", "targetId": "employer_demographics_module" },
+    { "id": "e5",  "sourceId": "input", "targetId": "alternate_data_module" },
+    { "id": "e6",  "sourceId": "input", "targetId": "fraud_risk_module" },
+    { "id": "e7",  "sourceId": "bureau_score_module", "targetId": "score_aggregator" },
+    { "id": "e8",  "sourceId": "bureau_behaviour_module", "targetId": "score_aggregator" },
+    { "id": "e9",  "sourceId": "income_foir_module", "targetId": "score_aggregator" },
+    { "id": "e10", "sourceId": "employer_demographics_module", "targetId": "score_aggregator" },
+    { "id": "e11", "sourceId": "alternate_data_module", "targetId": "score_aggregator" },
+    { "id": "e12", "sourceId": "fraud_risk_module", "targetId": "score_aggregator" },
+    { "id": "e13", "sourceId": "score_aggregator", "targetId": "output" }
+  ]
+}

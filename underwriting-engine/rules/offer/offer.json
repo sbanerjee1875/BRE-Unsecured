@@ -1,0 +1,127 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input",
+      "name": "Input",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 300 }
+    },
+    {
+      "id": "max_loan_by_income",
+      "name": "Max Loan by Income Band",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 80 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "netMonthlySalary", "name": "Net Monthly Salary", "field": "netMonthlySalary", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "maxLoanByIncome", "name": "Max Loan by Income", "field": "maxLoanByIncome", "dataType": "number" },
+          { "id": "maxTenureByIncome", "name": "Max Tenure by Income", "field": "maxTenureByIncome", "dataType": "number" }
+        ],
+        "rules": [
+          { "id": "r1", "netMonthlySalary": ">= 200000", "maxLoanByIncome": "2500000", "maxTenureByIncome": "60" },
+          { "id": "r2", "netMonthlySalary": ">= 75000",  "maxLoanByIncome": "2000000", "maxTenureByIncome": "60" },
+          { "id": "r3", "netMonthlySalary": ">= 35000",  "maxLoanByIncome": "1500000", "maxTenureByIncome": "48" },
+          { "id": "r4", "netMonthlySalary": ">= 20000",  "maxLoanByIncome": "500000",  "maxTenureByIncome": "36" }
+        ]
+      }
+    },
+    {
+      "id": "max_loan_by_employer",
+      "name": "Max Loan by Employer Category",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 260 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "employerCategory", "name": "Employer Category", "field": "employerCategory", "dataType": "string" }
+        ],
+        "outputs": [
+          { "id": "maxLoanByEmployer", "name": "Max Loan by Employer", "field": "maxLoanByEmployer", "dataType": "number" },
+          { "id": "employerRateAdj", "name": "Employer Rate Adjustment (bps)", "field": "employerRateAdj", "dataType": "number" }
+        ],
+        "rules": [
+          { "id": "r1", "employerCategory": "CAT_A", "maxLoanByEmployer": "2500000", "employerRateAdj": "-50" },
+          { "id": "r2", "employerCategory": "CAT_B", "maxLoanByEmployer": "2500000", "employerRateAdj": "0" },
+          { "id": "r3", "employerCategory": "CAT_C", "maxLoanByEmployer": "1500000", "employerRateAdj": "100" },
+          { "id": "r4", "employerCategory": "CAT_D", "maxLoanByEmployer": "500000",  "employerRateAdj": "250" }
+        ]
+      }
+    },
+    {
+      "id": "rate_by_score",
+      "name": "Rate Adjustment by Score Band",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 440 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "scoreTotal", "name": "Total Score", "field": "scoreTotal", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "scoreRateAdj", "name": "Score Rate Adjustment (bps)", "field": "scoreRateAdj", "dataType": "number" },
+          { "id": "decision", "name": "Decision Track", "field": "decision", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "scoreTotal": "< 400",     "scoreRateAdj": "0",    "decision": "DECLINE" },
+          { "id": "r2", "scoreTotal": "[400..499]", "scoreRateAdj": "400",  "decision": "REFER" },
+          { "id": "r3", "scoreTotal": "[500..599]", "scoreRateAdj": "250",  "decision": "CONDITIONAL_APPROVE" },
+          { "id": "r4", "scoreTotal": "[600..699]", "scoreRateAdj": "100",  "decision": "AUTO_APPROVE_STANDARD" },
+          { "id": "r5", "scoreTotal": "[700..799]", "scoreRateAdj": "50",   "decision": "AUTO_APPROVE_PRIME" },
+          { "id": "r6", "scoreTotal": ">= 800",     "scoreRateAdj": "-25",  "decision": "AUTO_APPROVE_SUPER_PRIME" }
+        ]
+      }
+    },
+    {
+      "id": "pin_tier_adjustment",
+      "name": "PIN Tier Rate Adjustment",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 600 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "pinTier", "name": "PIN Tier", "field": "pinTier", "dataType": "string" }
+        ],
+        "outputs": [
+          { "id": "pinRateAdj", "name": "PIN Rate Adjustment (bps)", "field": "pinRateAdj", "dataType": "number" },
+          { "id": "pinLoanCapMultiplier", "name": "PIN Loan Cap Multiplier", "field": "pinLoanCapMultiplier", "dataType": "number" }
+        ],
+        "rules": [
+          { "id": "r1", "pinTier": "TIER_1", "pinRateAdj": "0",   "pinLoanCapMultiplier": "1.00" },
+          { "id": "r2", "pinTier": "TIER_2", "pinRateAdj": "25",  "pinLoanCapMultiplier": "0.90" },
+          { "id": "r3", "pinTier": "TIER_3", "pinRateAdj": "75",  "pinLoanCapMultiplier": "0.70" }
+        ]
+      }
+    },
+    {
+      "id": "offer_calculator",
+      "name": "Final Offer Calculator",
+      "type": "functionNode",
+      "position": { "x": 560, "y": 380 },
+      "content": {
+        "source": "const handler = (input) => {\n  // Compute final interest rate\n  const baseRate = input.baseInterestRate || 10.50; // % p.a.\n  const totalRateAdjBps = (input.scoreRateAdj || 0)\n    + (input.employerRateAdj || 0)\n    + (input.pinRateAdj || 0);\n  const finalRate = baseRate + (totalRateAdjBps / 100);\n\n  // Compute max eligible amount (minimum of all caps)\n  const maxByIncome   = input.maxLoanByIncome    || 500000;\n  const maxByEmployer = input.maxLoanByEmployer  || 500000;\n  const maxByFoir     = input.maxAllowableEmi\n    ? Math.floor(input.maxAllowableEmi * 12 / (finalRate / 100)) : 2500000;\n  const pinMultiplier = input.pinLoanCapMultiplier || 1.0;\n\n  const maxEligible = Math.min(\n    maxByIncome,\n    maxByEmployer,\n    maxByFoir,\n    2500000\n  ) * pinMultiplier;\n\n  // Approved amount is min of requested vs eligible\n  const approvedAmount = Math.min(\n    input.requestedAmount || 0,\n    Math.floor(maxEligible / 1000) * 1000  // round down to nearest 1000\n  );\n\n  // EMI calculation: EMI = P * r * (1+r)^n / ((1+r)^n - 1)\n  const tenure = input.requestedTenure || 36;\n  const monthlyRate = finalRate / 100 / 12;\n  const emi = Math.round(\n    (approvedAmount * monthlyRate * Math.pow(1 + monthlyRate, tenure))\n    / (Math.pow(1 + monthlyRate, tenure) - 1)\n  );\n\n  const totalPayable = emi * tenure;\n  const totalInterest = totalPayable - approvedAmount;\n\n  // Processing fee: 0.5%–2% based on score band\n  let feePercent;\n  if (input.scoreTotal >= 800) feePercent = 0.50;\n  else if (input.scoreTotal >= 700) feePercent = 1.00;\n  else if (input.scoreTotal >= 600) feePercent = 1.50;\n  else feePercent = 2.00;\n\n  const processingFee = Math.round(approvedAmount * feePercent / 100);\n\n  const offerValidTill = new Date(\n    Date.now() + 30 * 24 * 60 * 60 * 1000\n  ).toISOString();\n\n  return {\n    approvedAmount,\n    maxEligibleAmount: Math.floor(maxEligible),\n    interestRate: Math.round(finalRate * 100) / 100,\n    rateType: 'REDUCING_BALANCE',\n    tenure,\n    emi,\n    processingFee,\n    processingFeePercent: feePercent,\n    totalInterestPayable: totalInterest,\n    totalAmountPayable: totalPayable,\n    offerValidTill,\n  };\n}"
+      }
+    },
+    {
+      "id": "output",
+      "name": "Output",
+      "type": "outputNode",
+      "position": { "x": 820, "y": 380 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceId": "input", "targetId": "max_loan_by_income" },
+    { "id": "e2", "sourceId": "input", "targetId": "max_loan_by_employer" },
+    { "id": "e3", "sourceId": "input", "targetId": "rate_by_score" },
+    { "id": "e4", "sourceId": "input", "targetId": "pin_tier_adjustment" },
+    { "id": "e5", "sourceId": "max_loan_by_income",   "targetId": "offer_calculator" },
+    { "id": "e6", "sourceId": "max_loan_by_employer", "targetId": "offer_calculator" },
+    { "id": "e7", "sourceId": "rate_by_score",        "targetId": "offer_calculator" },
+    { "id": "e8", "sourceId": "pin_tier_adjustment",  "targetId": "offer_calculator" },
+    { "id": "e9", "sourceId": "input",                "targetId": "offer_calculator" },
+    { "id": "e10","sourceId": "offer_calculator",     "targetId": "output" }
+  ]
+}

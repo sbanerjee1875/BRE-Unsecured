@@ -1,0 +1,192 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "nodes": [
+    {
+      "id": "input",
+      "name": "Input",
+      "type": "inputNode",
+      "position": { "x": 40, "y": 300 }
+    },
+    {
+      "id": "age_gate",
+      "name": "Age Hard Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 100 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "age", "name": "Age (years)", "field": "age", "dataType": "number" },
+          { "id": "maxTenureByAge", "name": "Max Tenure by Age", "field": "maxTenureByAge", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "_id": "age_min", "age": "< 21", "maxTenureByAge": "", "triggered": "true", "ruleId": "R-HG-004", "ruleName": "Age below minimum (21 years)" },
+          { "id": "r2", "_id": "age_max", "age": "> 58", "maxTenureByAge": "", "triggered": "true", "ruleId": "R-HG-005", "ruleName": "Age above maximum (58 years)" },
+          { "id": "r3", "_id": "age_ok", "age": "[21..58]", "maxTenureByAge": "", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "cibil_gate",
+      "name": "CIBIL Score Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 220 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "cibilScore", "name": "CIBIL Score", "field": "cibilScore", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "cibilScore": "< 650", "triggered": "true", "ruleId": "R-HG-001", "ruleName": "CIBIL Score below minimum (650)" },
+          { "id": "r2", "cibilScore": ">= 650", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "delinquency_gate",
+      "name": "Delinquency Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 340 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "dpd90Ever", "name": "DPD 90+ Ever", "field": "dpd90Ever", "dataType": "number" },
+          { "id": "dpd30Last6Months", "name": "DPD 30+ Last 6M", "field": "dpd30Last6Months", "dataType": "number" },
+          { "id": "writtenOffOrSettledCount", "name": "Write-off Count", "field": "writtenOffOrSettledCount", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "dpd90Ever": "> 0", "dpd30Last6Months": "", "writtenOffOrSettledCount": "", "triggered": "true", "ruleId": "R-HG-002", "ruleName": "DPD 90+ found in bureau history" },
+          { "id": "r2", "dpd90Ever": "", "dpd30Last6Months": "> 1", "writtenOffOrSettledCount": "", "triggered": "true", "ruleId": "R-HG-012", "ruleName": "DPD 30+ in last 6 months exceeds threshold" },
+          { "id": "r3", "dpd90Ever": "", "dpd30Last6Months": "", "writtenOffOrSettledCount": "> 0", "triggered": "true", "ruleId": "R-HG-003", "ruleName": "Written-off or settled account exists" },
+          { "id": "r4", "dpd90Ever": "= 0", "dpd30Last6Months": "<= 1", "writtenOffOrSettledCount": "= 0", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "income_gate",
+      "name": "Income Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 460 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "netMonthlySalary", "name": "Net Monthly Salary", "field": "netMonthlySalary", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "netMonthlySalary": "< 20000", "triggered": "true", "ruleId": "R-HG-006", "ruleName": "Net monthly income below minimum (₹20,000)" },
+          { "id": "r2", "netMonthlySalary": ">= 20000", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "foir_gate",
+      "name": "FOIR Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 580 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "foirPostLoan", "name": "FOIR Post Loan", "field": "foirPostLoan", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "foirPostLoan": "> 0.65", "triggered": "true", "ruleId": "R-HG-007", "ruleName": "FOIR exceeds maximum (65%) post new EMI" },
+          { "id": "r2", "foirPostLoan": "<= 0.65", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "behavioural_gate",
+      "name": "Behavioural Hard Gates",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 700 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "lendingAppsCount", "name": "Lending Apps Count", "field": "lendingAppsCount", "dataType": "number" },
+          { "id": "bounceOrReturnCount", "name": "Bounce/Return SMS Count", "field": "bounceOrReturnCount", "dataType": "number" },
+          { "id": "hasCasinoBettingApp", "name": "Casino/Betting App", "field": "hasCasinoBettingApp", "dataType": "boolean" },
+          { "id": "enquiriesLast30Days", "name": "Enquiries Last 30 Days", "field": "enquiriesLast30Days", "dataType": "number" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "lendingAppsCount": "> 5", "bounceOrReturnCount": "", "hasCasinoBettingApp": "", "enquiriesLast30Days": "", "triggered": "true", "ruleId": "R-HG-008", "ruleName": "Excessive lending apps (>5) — credit hungry signal" },
+          { "id": "r2", "lendingAppsCount": "", "bounceOrReturnCount": "> 0", "hasCasinoBettingApp": "", "enquiriesLast30Days": "", "triggered": "true", "ruleId": "R-HG-009", "ruleName": "NACH bounce detected in last 12 months" },
+          { "id": "r3", "lendingAppsCount": "", "bounceOrReturnCount": "", "hasCasinoBettingApp": "true", "enquiriesLast30Days": "", "triggered": "true", "ruleId": "R-HG-011", "ruleName": "Casino or betting application installed" },
+          { "id": "r4", "lendingAppsCount": "", "bounceOrReturnCount": "", "hasCasinoBettingApp": "", "enquiriesLast30Days": "> 5", "triggered": "true", "ruleId": "R-HG-015", "ruleName": "Excessive bureau enquiries in last 30 days (>5)" },
+          { "id": "r5", "lendingAppsCount": "<= 5", "bounceOrReturnCount": "= 0", "hasCasinoBettingApp": "false", "enquiriesLast30Days": "<= 5", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "geo_gate",
+      "name": "Geo / PIN Gate",
+      "type": "decisionTableNode",
+      "position": { "x": 260, "y": 820 },
+      "content": {
+        "hitPolicy": "first",
+        "inputs": [
+          { "id": "isNegativeZonePin", "name": "Negative Zone PIN", "field": "isNegativeZonePin", "dataType": "boolean" }
+        ],
+        "outputs": [
+          { "id": "triggered", "name": "Triggered", "field": "triggered", "dataType": "boolean" },
+          { "id": "ruleId", "name": "Rule ID", "field": "ruleId", "dataType": "string" },
+          { "id": "ruleName", "name": "Rule Name", "field": "ruleName", "dataType": "string" }
+        ],
+        "rules": [
+          { "id": "r1", "isNegativeZonePin": "true", "triggered": "true", "ruleId": "R-HG-010", "ruleName": "Residence PIN code is on negative zone list" },
+          { "id": "r2", "isNegativeZonePin": "false", "triggered": "false", "ruleId": "", "ruleName": "" }
+        ]
+      }
+    },
+    {
+      "id": "output",
+      "name": "Output",
+      "type": "outputNode",
+      "position": { "x": 560, "y": 300 }
+    }
+  ],
+  "edges": [
+    { "id": "e1", "sourceId": "input", "targetId": "age_gate" },
+    { "id": "e2", "sourceId": "input", "targetId": "cibil_gate" },
+    { "id": "e3", "sourceId": "input", "targetId": "delinquency_gate" },
+    { "id": "e4", "sourceId": "input", "targetId": "income_gate" },
+    { "id": "e5", "sourceId": "input", "targetId": "foir_gate" },
+    { "id": "e6", "sourceId": "input", "targetId": "behavioural_gate" },
+    { "id": "e7", "sourceId": "input", "targetId": "geo_gate" },
+    { "id": "e8", "sourceId": "age_gate", "targetId": "output" },
+    { "id": "e9", "sourceId": "cibil_gate", "targetId": "output" },
+    { "id": "e10", "sourceId": "delinquency_gate", "targetId": "output" },
+    { "id": "e11", "sourceId": "income_gate", "targetId": "output" },
+    { "id": "e12", "sourceId": "foir_gate", "targetId": "output" },
+    { "id": "e13", "sourceId": "behavioural_gate", "targetId": "output" },
+    { "id": "e14", "sourceId": "geo_gate", "targetId": "output" }
+  ]
+}

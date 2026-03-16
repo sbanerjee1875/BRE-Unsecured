@@ -1,0 +1,49 @@
+{
+  "applicationId": "PL-2024-550e8400-e29b-41d4-a716-446655440000",
+  "channel": "DIGITAL",
+  "applicant": {
+    "panNumber": "a3f5b8c2d1e4f7a9b6c3d0e5f2a8b4c7d1e3f6a2b5c8d4e7f0a1b3c6d9e2f5",
+    "mobile": "+919876543210",
+    "email": "rahul.sharma@example.com",
+    "dateOfBirth": "1990-06-15",
+    "age": 34,
+    "gender": "MALE",
+    "firstName": "Rahul",
+    "lastName": "Sharma"
+  },
+  "financials": {
+    "netMonthlySalary": 75000,
+    "grossAnnualIncome": 1080000,
+    "employerName": "Tata Consultancy Services",
+    "employerCategory": "CAT_B",
+    "employmentTenureMonths": 36,
+    "salaryAccountBank": "HDFC Bank"
+  },
+  "address": {
+    "residenceType": "RENTED",
+    "pinCode": "400001",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "addressLine1": "Flat 4B, Marine Lines"
+  },
+  "loanRequest": {
+    "requestedAmount": 500000,
+    "requestedTenure": 36,
+    "purpose": "HOME_RENOVATION"
+  },
+  "consentTokens": {
+    "bureauConsent": "eyJhbGciOiJSUzI1NiJ9.bureau-consent-payload",
+    "aaConsent": "eyJhbGciOiJSUzI1NiJ9.aa-consent-payload",
+    "smsConsent": "eyJhbGciOiJSUzI1NiJ9.sms-consent-payload",
+    "locationConsent": "eyJhbGciOiJSUzI1NiJ9.location-consent-payload",
+    "appographyConsent": "eyJhbGciOiJSUzI1NiJ9.app-consent-payload"
+  },
+  "deviceData": {
+    "deviceId": "b4c7d1e3f6a2b5c8d4e7f0a1b3c6d9e2f5a3f5b8c2d1e4f7a9b6c3d0e5f2a8",
+    "osType": "ANDROID",
+    "osVersion": "14.0",
+    "appVersion": "3.2.1",
+    "deviceFingerprint": "fp_a3b5c8d2e4f7"
+  },
+  "requestTimestamp": "2024-03-16T10:30:00.000Z"
+}

@@ -1,0 +1,120 @@
+version: '3.9'
+
+services:
+
+  # ── Underwriting Engine ──────────────────────────────────────
+  underwriting-engine:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: underwriting-engine
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://uw_user:uw_pass@postgres:5432/underwriting_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: local-dev-secret-change-in-prod
+      BASE_INTEREST_RATE: "10.50"
+      MAX_FOIR: "0.65"
+      # Internal service URLs (mock services in dev)
+      PIN_RISK_BASE_URL: http://mock-services:4000/v1
+      FRAUD_BLACKLIST_BASE_URL: http://mock-services:4000/v1
+      AUDIT_LOG_BASE_URL: http://mock-services:4000/v1
+      CONSENT_LEDGER_BASE_URL: http://mock-services:4000/v1
+      PRICING_ENGINE_BASE_URL: http://mock-services:4000/v1
+      LOCATION_INTERNAL_BASE_URL: http://mock-services:4000/v1
+      # External APIs (use sandbox URLs in dev)
+      CIBIL_BASE_URL: https://sandbox.cibil.com/v2
+      CIBIL_CLIENT_ID: sandbox-client-id
+      CIBIL_CLIENT_SECRET: sandbox-client-secret
+      CIBIL_TOKEN_URL: https://sandbox.cibil.com/oauth/token
+      RULES_DIRECTORY: /app/rules
+    volumes:
+      - ./rules:/app/rules:ro          # Hot-reload rules without restart
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - uw-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── PostgreSQL ────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: uw-postgres
+    environment:
+      POSTGRES_USER: uw_user
+      POSTGRES_PASSWORD: uw_pass
+      POSTGRES_DB: underwriting_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - uw-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uw_user -d underwriting_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (BullMQ + Cache) ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: uw-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - uw-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Mock Internal Services (for local dev) ────────────────────
+  mock-services:
+    image: node:20-alpine
+    container_name: uw-mock-services
+    working_dir: /app
+    command: node mock-server.js
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./docker/mock-server.js:/app/mock-server.js:ro
+    networks:
+      - uw-network
+
+  # ── Adminer (DB UI for dev) ────────────────────────────────────
+  adminer:
+    image: adminer:latest
+    container_name: uw-adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - uw-network
+    profiles:
+      - dev-tools
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  uw-network:
+    driver: bridge
