@@ -112,7 +112,7 @@ function evaluateDecisionTable(
         if (outputDef.dataType === 'number') {
           output[outputDef.field] = parseFloat(rawVal);
         } else if (outputDef.dataType === 'boolean') {
-          output[outputDef.field] = rawVal === 'true' || rawVal === true;
+          output[outputDef.field] = rawVal === 'true';
         } else {
           output[outputDef.field] = rawVal;
         }

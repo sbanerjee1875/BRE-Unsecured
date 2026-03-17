@@ -69,7 +69,7 @@ export class UnderwritingPipeline {
         this.runWithErrorCapture(() => this.smsIntegration.fetchSmsSignals(request), ctx, 'SMS', 'API-010'),
       ]);
 
-      ctx.bureau = this.extractResult(bureauResult);
+      ctx.bureau = this.extractResult(bureauResult)?.data;
       ctx.aa = this.extractResult(aaResult) ?? { available: false, monthlySummaries: [], avgMonthlyCredit: 0, avgMonthlyEmiDebit: 0, salaryConsistencyScore: 0, hasBounce: false, activeSipAmount: 0, avgBalance6Month: 0, balanceTrend: 'STABLE', overdraftUsageCount: 0 };
       ctx.appography = this.extractResult(appResult);
       ctx.sms = this.extractResult(smsResult);

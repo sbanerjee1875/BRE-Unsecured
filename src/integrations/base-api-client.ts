@@ -73,7 +73,7 @@ export class BaseApiClient {
     circuitState.delete(this.config.apiId);
   }
 
-  protected async executeWithRetry<T>(
+  public async executeWithRetry<T>(
     requestFn: () => Promise<AxiosResponse<T>>,
     maxRetries: number = this.config.maxRetries ?? 3
   ): Promise<ApiResponse<T>> {

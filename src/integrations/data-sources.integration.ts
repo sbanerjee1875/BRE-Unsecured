@@ -298,13 +298,13 @@ export class AppographyIntegration {
       fintechAppsCount: d.fintechApps ?? 0,
       lendingAppsCount: d.lendingApps ?? 0,
       bankingAppsCount: d.bankingApps ?? 0,
-      hasInvestmentApp: d.investmentApps?.length > 0 ?? false,
-      hasInsuranceApp: d.insuranceApps?.length > 0 ?? false,
+      hasInvestmentApp: (d.investmentApps?.length ?? 0) > 0,
+      hasInsuranceApp: (d.insuranceApps?.length ?? 0) > 0,
       ecommerceVintageDays: d.ecommerceVintageDays ?? 0,
-      hasRideShareFoodApp: d.rideShareApps?.length > 0 ?? false,
+      hasRideShareFoodApp: (d.rideShareApps?.length ?? 0) > 0,
       hasLinkedInApp: d.professionalApps?.includes('linkedin') ?? false,
       daysSinceLastOsUpdate: d.daysSinceOsUpdate ?? 999,
-      hasCasinoBettingApp: d.gamblingApps?.length > 0 ?? false,
+      hasCasinoBettingApp: (d.gamblingApps?.length ?? 0) > 0,
     };
   }
 }
