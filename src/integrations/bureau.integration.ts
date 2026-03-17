@@ -152,7 +152,7 @@ export class BureauIntegration {
 
     this.callLog.push(...client.callLog);
 
-    if (!result.success || !result.data) return result as ApiResponse<BureauData>;
+    if (!result.success || !result.data) return result as unknown as ApiResponse<BureauData>;
 
     // Fetch Income Estimator in parallel
     const incomeResult = await this.fetchCibilIncomeEstimator(request, client);
@@ -249,7 +249,7 @@ export class BureauIntegration {
 
     this.callLog.push(...client.callLog);
 
-    if (!result.success || !result.data) return result as ApiResponse<BureauData>;
+    if (!result.success || !result.data) return result as unknown as ApiResponse<BureauData>;
 
     // Map Experian response to our BureauData schema
     const exp = result.data;
