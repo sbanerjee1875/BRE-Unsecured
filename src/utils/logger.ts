@@ -7,6 +7,7 @@ import winston from 'winston';
 const { combine, timestamp, json, colorize, simple } = winston.format;
 
 const isProduction = process.env.NODE_ENV === 'production';
+const isVercel = !!process.env.VERCEL;
 
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -16,7 +17,8 @@ export const logger = winston.createLogger({
   defaultMeta: { service: 'underwriting-engine', version: '1.0.0' },
   transports: [
     new winston.transports.Console(),
-    ...(isProduction ? [
+    // File transports only for non-serverless production (Vercel has read-only filesystem)
+    ...(isProduction && !isVercel ? [
       new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
       new winston.transports.File({ filename: 'logs/combined.log' }),
     ] : []),
