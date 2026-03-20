@@ -47,6 +47,36 @@ router.post(
   }
 );
 
+// ── POST /v1/demo/underwrite — Demo endpoint (no auth) ──────────
+// Used by the frontend demo — skips JWT auth but keeps consent validation
+router.post(
+  '/demo/underwrite',
+  validateConsents,
+  async (req: Request, res: Response) => {
+    const { value, error } = validateUnderwritingRequest(req.body);
+
+    if (error) {
+      return res.status(422).json({
+        code: 'VALIDATION_ERROR',
+        message: 'Request payload validation failed',
+        details: error.details.map((d) => ({ field: d.path.join('.'), message: d.message })),
+      });
+    }
+
+    try {
+      const result = await pipeline.process(value);
+      const statusCode = result.decision === 'APPROVE' ? 200
+        : result.decision === 'REFER' ? 202
+        : 200;
+
+      return res.status(statusCode).json(result);
+    } catch (err: any) {
+      logger.error(`[Route] Demo underwrite error: ${err.message}`);
+      return res.status(500).json({ code: 'ENGINE_ERROR', message: 'Underwriting engine error' });
+    }
+  }
+);
+
 // ── POST /v1/rules/reload — Force reload rules from disk ───────
 // Useful when credit policy is updated without restarting service
 router.post('/rules/reload', authMiddleware, (req: Request, res: Response) => {

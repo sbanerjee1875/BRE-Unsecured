@@ -7,12 +7,15 @@
       "config": {
         "includeFiles": ["rules/**", "src/**"]
       }
+    },
+    {
+      "src": "frontend/dist/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.ts"
-    }
+    { "src": "/v1/(.*)", "dest": "/api/index.ts" },
+    { "src": "/(.*\\.(js|css|ico|png|svg|json|woff2?))", "dest": "/frontend/dist/$1" },
+    { "src": "/(.*)", "dest": "/frontend/dist/index.html" }
   ]
 }
