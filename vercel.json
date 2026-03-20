@@ -9,13 +9,17 @@
       }
     },
     {
-      "src": "frontend/dist/**",
-      "use": "@vercel/static"
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     }
   ],
   "routes": [
     { "src": "/v1/(.*)", "dest": "/api/index.ts" },
-    { "src": "/(.*\\.(js|css|ico|png|svg|json|woff2?))", "dest": "/frontend/dist/$1" },
-    { "src": "/(.*)", "dest": "/frontend/dist/index.html" }
+    { "src": "/assets/(.*)", "dest": "/frontend/assets/$1" },
+    { "src": "/favicon\\.(ico|svg|png)", "dest": "/frontend/favicon.$1" },
+    { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }
