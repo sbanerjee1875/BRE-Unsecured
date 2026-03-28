@@ -6,6 +6,7 @@ import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { logger } from '../utils/logger';
+import { analyticsStore } from '../analytics/analytics.store';
 
 // ── JWT Auth Middleware ────────────────────────────────────────
 
@@ -48,7 +49,9 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
   req.headers['x-correlation-id'] = correlationId;
 
   res.on('finish', () => {
-    logger.info(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - start}ms [${correlationId}]`);
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.path} ${res.statusCode} ${duration}ms [${correlationId}]`);
+    analyticsStore.recordApiRequest(req.method, req.path, res.statusCode, duration);
   });
   next();
 }

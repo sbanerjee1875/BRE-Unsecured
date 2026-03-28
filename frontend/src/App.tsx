@@ -1,15 +1,19 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import FormWizardPage from './pages/FormWizardPage';
-import ResultPage from './pages/ResultPage';
+import MarketplacePage from './pages/MarketplacePage';
+import AdminPage from './pages/AdminPage';
+import { usePageTracking } from './hooks/useAnalytics';
 
-export default function App() {
+function TrackedRoutes() {
+  usePageTracking();
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/apply" element={<FormWizardPage />} />
-      <Route path="/result" element={<ResultPage />} />
+      <Route path="/" element={<MarketplacePage />} />
+      <Route path="/admin" element={<AdminPage />} />
     </Routes>
   );
+}
+
+export default function App() {
+  return <TrackedRoutes />;
 }

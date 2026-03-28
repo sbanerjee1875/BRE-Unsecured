@@ -8,6 +8,7 @@ import { RuleEngineModule } from '../modules/rule-engine.module';
 import { validateUnderwritingRequest } from '../utils/masking';
 import { authMiddleware, validateConsents } from '../middleware';
 import { logger } from '../utils/logger';
+import { analyticsStore } from '../analytics/analytics.store';
 
 const router = Router();
 const pipeline = new UnderwritingPipeline();
@@ -65,9 +66,15 @@ router.post(
 
     try {
       const result = await pipeline.process(value);
+      const appId = result.applicationId || `app-${Date.now()}`;
       const statusCode = result.decision === 'APPROVE' ? 200
         : result.decision === 'REFER' ? 202
         : 200;
+
+      analyticsStore.recordApplicationEvent(appId, 'submitted');
+      if (result.decision === 'APPROVE') analyticsStore.recordApplicationEvent(appId, 'approved');
+      else if (result.decision === 'DECLINE') analyticsStore.recordApplicationEvent(appId, 'declined');
+      else if (result.decision === 'REFER') analyticsStore.recordApplicationEvent(appId, 'referred');
 
       return res.status(statusCode).json(result);
     } catch (err: any) {

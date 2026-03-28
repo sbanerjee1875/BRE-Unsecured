@@ -10,6 +10,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import underwritingRouter from './routes/underwriting.routes';
+import analyticsRouter from './routes/analytics.routes';
 import { requestLogger, errorHandler, rateLimiter } from './middleware';
 import { logger } from './utils/logger';
 
@@ -33,6 +34,7 @@ app.use(rateLimiter);
 
 // ── Routes ────────────────────────────────────────────────────
 app.use('/v1', underwritingRouter);
+app.use('/v1', analyticsRouter);
 
 // ── Root ping (useful for Vercel deploy health check) ─────────
 app.get('/', (_req, res) => {
